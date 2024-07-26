@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	"github.com/plutocholia/ipruler-controller/internal/models"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,8 +29,8 @@ type NodeConfigSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of NodeConfig. Edit nodeconfig_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	NodeSelector map[string]string  `json:"nodeSelector,omitempty"`
+	Config       models.ConfigModel `json:"config,omitempty"`
 }
 
 // NodeConfigStatus defines the observed state of NodeConfig

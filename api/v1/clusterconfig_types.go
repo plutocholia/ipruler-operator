@@ -29,9 +29,7 @@ type ClusterConfigSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of ClusterConfig. Edit clusterconfig_types.go to remove/update
 	Config models.ConfigModel `json:"config,omitempty"`
-	// NodeSelector map[string]string  `json:"nodeSelector,omitempty"`
 }
 
 // ClusterConfigStatus defines the observed state of ClusterConfig

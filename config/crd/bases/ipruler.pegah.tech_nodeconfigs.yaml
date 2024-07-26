@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.15.0
-  name: clusterconfigs.ipruler.pegah.tech
+  name: nodeconfigs.ipruler.pegah.tech
 spec:
   group: ipruler.pegah.tech
   names:
-    kind: ClusterConfig
-    listKind: ClusterConfigList
-    plural: clusterconfigs
-    singular: clusterconfig
+    kind: NodeConfig
+    listKind: NodeConfigList
+    plural: nodeconfigs
+    singular: nodeconfig
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: ClusterConfig is the Schema for the clusterconfigs API
+        description: NodeConfig is the Schema for the nodeconfigs API
         properties:
           apiVersion:
             description: |-
@@ -37,7 +37,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ClusterConfigSpec defines the desired state of ClusterConfig
+            description: NodeConfigSpec defines the desired state of NodeConfig
             properties:
               config:
                 properties:
@@ -90,9 +90,13 @@ spec:
                       type: object
                     type: array
                 type: object
+              nodeSelector:
+                additionalProperties:
+                  type: string
+                type: object
             type: object
           status:
-            description: ClusterConfigStatus defines the observed state of ClusterConfig
+            description: NodeConfigStatus defines the observed state of NodeConfig
             type: object
         type: object
     served: true
