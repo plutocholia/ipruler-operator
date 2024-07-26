@@ -1,8 +1,11 @@
----
+# permissions for end users to edit clusterconfigs.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: manager-role
+  labels:
+    app.kubernetes.io/name: ipruler-controller
+    app.kubernetes.io/managed-by: kustomize
+  name: clusterconfig-editor-role
 rules:
 - apiGroups:
   - ipruler.pegah.tech
@@ -19,14 +22,6 @@ rules:
 - apiGroups:
   - ipruler.pegah.tech
   resources:
-  - clusterconfigs/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - ipruler.pegah.tech
-  resources:
   - clusterconfigs/status
   verbs:
   - get
-  - patch
-  - update

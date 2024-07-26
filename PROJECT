@@ -7,4 +7,14 @@ layout:
 - go.kubebuilder.io/v4
 projectName: ipruler-controller
 repo: github.com/plutocholia/ipruler-controller
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: pegah.tech
+  group: ipruler
+  kind: ClusterConfig
+  path: github.com/plutocholia/ipruler-controller/api/v1
+  version: v1
 version: "3"

@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- ipruler_v1_clusterconfig.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

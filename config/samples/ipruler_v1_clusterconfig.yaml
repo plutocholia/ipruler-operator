@@ -1,0 +1,18 @@
+apiVersion: ipruler.pegah.tech/v1
+kind: ClusterConfig
+metadata:
+  labels:
+    app.kubernetes.io/name: ipruler-controller
+    app.kubernetes.io/managed-by: kustomize
+  name: clusterconfig-sample
+spec:
+  config:
+    settings:
+      table-hard-sync:
+      - 102
+      - 103
+    rules:
+    - from: 172.31.201.11/32
+      table: 102
+    - from: 172.31.201.12/32
+      table: 102
