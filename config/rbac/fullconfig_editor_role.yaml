@@ -1,0 +1,27 @@
+# permissions for end users to edit fullconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: ipruler-controller
+    app.kubernetes.io/managed-by: kustomize
+  name: fullconfig-editor-role
+rules:
+- apiGroups:
+  - ipruler.pegah.tech
+  resources:
+  - fullconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ipruler.pegah.tech
+  resources:
+  - fullconfigs/status
+  verbs:
+  - get

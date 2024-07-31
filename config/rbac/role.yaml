@@ -33,6 +33,32 @@ rules:
 - apiGroups:
   - ipruler.pegah.tech
   resources:
+  - fullconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ipruler.pegah.tech
+  resources:
+  - fullconfigs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ipruler.pegah.tech
+  resources:
+  - fullconfigs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ipruler.pegah.tech
+  resources:
   - nodeconfigs
   verbs:
   - create

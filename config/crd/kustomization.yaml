@@ -4,6 +4,7 @@
 resources:
 - bases/ipruler.pegah.tech_clusterconfigs.yaml
 - bases/ipruler.pegah.tech_nodeconfigs.yaml
+- bases/ipruler.pegah.tech_fullconfigs.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:
@@ -15,6 +16,7 @@ patches:
 # patches here are for enabling the CA injection for each CRD
 #- path: patches/cainjection_in_clusterconfigs.yaml
 #- path: patches/cainjection_in_nodeconfigs.yaml
+#- path: patches/cainjection_in_fullconfigs.yaml
 # +kubebuilder:scaffold:crdkustomizecainjectionpatch
 
 # [WEBHOOK] To enable webhook, uncomment the following section

@@ -1,18 +1,16 @@
 apiVersion: ipruler.pegah.tech/v1
-kind: ClusterConfig
+kind: NodeConfig
 metadata:
   labels:
     app.kubernetes.io/name: ipruler-controller
     app.kubernetes.io/managed-by: kustomize
-  name: clusterconfig-sample
+  name: nodeconfig-eth3
 spec:
+  nodeSelector:
+    networking.type: "eth3"
   config:
-    settings:
-      table-hard-sync:
-      - 102
-      # - 103
     rules:
-    - from: 172.31.201.11/32
+    - from: 172.31.201.8/32
       table: 102
-    - from: 172.31.201.12/32
+    - from: 172.31.201.9/32
       table: 102

@@ -126,6 +126,7 @@ func main() {
 	if err = (&controller.AgentPodsReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		Log:    ctrl.Log.WithName("Controllers").WithName("AgentPods"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "AgentPods")
 		os.Exit(1)
@@ -134,6 +135,7 @@ func main() {
 	if err = (&controller.ClusterConfigReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		Log:    ctrl.Log.WithName("Controllers").WithName("ClusterConfig"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClusterConfig")
 		os.Exit(1)
@@ -142,8 +144,18 @@ func main() {
 	if err = (&controller.NodeConfigReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		Log:    ctrl.Log.WithName("Controllers").WithName("NodeConfig"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NodeConfig")
+		os.Exit(1)
+	}
+
+	if err = (&controller.FullConfigReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+		Log:    ctrl.Log.WithName("Controllers").WithName("FullConfig"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "FullConfig")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

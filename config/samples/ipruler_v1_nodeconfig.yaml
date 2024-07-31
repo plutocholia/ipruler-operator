@@ -6,4 +6,11 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: nodeconfig-sample
 spec:
-  # TODO(user): Add fields here
+  nodeSelector:
+    networking.type: "eth2"
+  config:
+    rules:
+    - from: 172.31.201.13/32
+      table: 102
+    - from: 172.31.201.14/32
+      table: 102

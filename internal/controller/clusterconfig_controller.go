@@ -18,26 +18,26 @@ package controller
 
 import (
 	"context"
+	"reflect"
 
-	"gopkg.in/yaml.v2"
-	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"github.com/go-logr/logr"
 	iprulerv1 "github.com/plutocholia/ipruler-controller/api/v1"
-)
-
-var (
-	setupLog = ctrl.Log.WithName("Controller")
+	"github.com/plutocholia/ipruler-controller/internal/models"
 )
 
 // ClusterConfigReconciler reconciles a ClusterConfig object
 type ClusterConfigReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+	Log    logr.Logger
 }
 
 // +kubebuilder:rbac:groups=ipruler.pegah.tech,resources=clusterconfigs,verbs=get;list;watch;create;update;patch;delete
@@ -58,43 +58,128 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	var clusterConfig iprulerv1.ClusterConfig
 	if err := r.Get(ctx, req.NamespacedName, &clusterConfig); err != nil {
+		if apierrors.IsNotFound(err) {
+			r.Log.Info("resource has been deleted", "namespace", req.Namespace, "name", req.Name)
+			return ctrl.Result{}, nil
+		}
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	podList := &corev1.PodList{}
-	if err := r.List(ctx, podList,
-		client.MatchingLabels{globalAgentManager.AppLabelKey: globalAgentManager.AppLabelValue},
-		client.InNamespace(globalAgentManager.Namespace)); err != nil {
-		setupLog.Error(err, "Failed to get the pods list")
-		return reconcile.Result{}, err
+	// Check if the resource is being deleted
+	if !clusterConfig.ObjectMeta.DeletionTimestamp.IsZero() {
+		r.Log.Info("resource is being deleted", "namespace", req.Namespace, "name", req.Name)
+		if res, err := r.handleDeletion(ctx, &clusterConfig); err != nil {
+			return res, err
+		}
+		return ctrl.Result{}, nil
 	}
 
-	// fmt.Println("the cluster config \n", clusterConfig.Spec.Config)
-	globalAgentManager.Mutex.Lock()
-	defer globalAgentManager.Mutex.Unlock()
-	globalAgentManager.Config = &clusterConfig.Spec.Config
+	// The resource is not being deleted, handle update or create
+	// r.Log.Info("resource is being updated or created", "namespace", req.Namespace, "name", req.Name)
+	if res, err := r.handleUpdateOrCreate(ctx, &clusterConfig); err != nil {
+		return res, err
+	}
 
-	for _, pod := range podList.Items {
-		if PodIsReadyForConfigInjection(&pod) {
-			globalAgentManager.InjectConfig(&pod)
+	// podList := &corev1.PodList{}
+	// if err := r.List(ctx, podList,
+	// 	client.MatchingLabels{globalAgentManager.AppLabelKey: globalAgentManager.AppLabelValue},
+	// 	client.InNamespace(globalAgentManager.Namespace)); err != nil {
+	// 	r.Log.Error(err, "Failed to get the pods list")
+	// 	return reconcile.Result{}, err
+	// }
+	// for _, pod := range podList.Items {
+	// 	if PodIsReadyForConfigInjection(&pod) {
+	// 		var node corev1.Node
+	// 		if err := r.Get(ctx, client.ObjectKey{Name: pod.Spec.NodeName}, &node); err != nil {
+	// 			r.Log.Error(err, "message", "Failed to get Node for Pod", "Pod", pod.Name)
+	// 			return reconcile.Result{}, err
+	// 		}
+	// 		nodeLabels := node.GetLabels()
+	// 		nodeConfig := globalAgentManager.FindNodeConfigByLabelList(nodeLabels)
+	// 		if nodeConfig != nil {
+	// 			globalAgentManager.InjectConfig(&pod, nodeConfig)
+	// 		} else {
+	// 			r.Log.Info("=> No NodeConfig is returned for ", "pod", pod.Name)
+	// 		}
+	// 	}
+	// }
+
+	return ctrl.Result{}, nil
+}
+
+func (r *ClusterConfigReconciler) handleUpdateOrCreate(ctx context.Context, clusterConfig *iprulerv1.ClusterConfig) (ctrl.Result, error) {
+
+	sharedFullConfig.ClusterConfigName = clusterConfig.Name
+	sharedFullConfig.ClusterConfigNamespace = clusterConfig.Namespace
+
+	fullConfigList := &iprulerv1.FullConfigList{}
+	err := r.Client.List(ctx, fullConfigList)
+	if err != nil {
+		r.Log.Error(err, "Failed to List FullConfig")
+		return ctrl.Result{}, err
+	}
+
+	if len(fullConfigList.Items) == 0 {
+		return ctrl.Result{Requeue: true}, nil
+	}
+
+	// update ClusterConfig and MergedConfig Part
+	for _, fullConfig := range fullConfigList.Items {
+		if !reflect.DeepEqual(fullConfig.Spec.ClusterConfig, clusterConfig.Spec.Config) {
+			fullConfig.Spec.ClusterConfig = clusterConfig.Spec.Config
+			fullConfig.Spec.MergedConfig = models.MergeConfigModels(&clusterConfig.Spec.Config, &fullConfig.Spec.NodeConfig)
+			err = r.Client.Update(ctx, &fullConfig)
+			if err != nil {
+				r.Log.Error(err, "Failed to update FullConfig", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
+				return ctrl.Result{}, err
+			}
+			r.Log.Info("Updated FullConfig", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
+			return ctrl.Result{Requeue: true}, nil
+		}
+	}
+
+	// update status
+	for _, fullConfig := range fullConfigList.Items {
+		fullConfig.Status.HasClusterConfig = true
+		err = r.Client.Status().Update(ctx, &fullConfig)
+		if err != nil {
+			r.Log.Error(err, "Failed to update FullConfig status", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
+			return ctrl.Result{Requeue: true}, err
+		} else {
+			r.Log.Info("Updated FullConfig status", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
 		}
 	}
 
 	return ctrl.Result{}, nil
 }
 
-// ConvertToYAML converts a struct to a YAML string
-func ConvertToYAML(v interface{}) (string, error) {
-	data, err := yaml.Marshal(v)
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
+func (r *ClusterConfigReconciler) handleDeletion(ctx context.Context, clusterConfig *iprulerv1.ClusterConfig) (ctrl.Result, error) {
+
+	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
+
 func (r *ClusterConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&iprulerv1.ClusterConfig{}).
+		Watches(
+			&iprulerv1.FullConfig{},
+			handler.EnqueueRequestsFromMapFunc(r.findObjectsForFullConfig),
+		).
 		Complete(r)
+}
+
+func (r *ClusterConfigReconciler) findObjectsForFullConfig(ctx context.Context, fullConfig client.Object) []ctrl.Request {
+
+	requests := []ctrl.Request{
+		{
+			NamespacedName: types.NamespacedName{
+				Name:      sharedFullConfig.ClusterConfigName,
+				Namespace: sharedFullConfig.ClusterConfigNamespace,
+			},
+		},
+	}
+
+	return requests
 }

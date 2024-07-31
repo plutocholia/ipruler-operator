@@ -2,4 +2,5 @@
 resources:
 - ipruler_v1_clusterconfig.yaml
 - ipruler_v1_nodeconfig.yaml
+- ipruler_v1_fullconfig.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

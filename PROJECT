@@ -26,4 +26,13 @@ resources:
   kind: NodeConfig
   path: github.com/plutocholia/ipruler-controller/api/v1
   version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: pegah.tech
+  group: ipruler
+  kind: FullConfig
+  path: github.com/plutocholia/ipruler-controller/api/v1
+  version: v1
 version: "3"
