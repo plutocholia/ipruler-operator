@@ -73,12 +73,10 @@ func (r *NodeConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res, err := r.handleDeletion(ctx, &nodeConfig); err != nil {
 			return res, err
 		}
-
 		return ctrl.Result{}, nil
 	}
 
 	// The resource is not being deleted, handle update or create
-	// r.Log.Info("resource is being updated or created", "namespace", req.Namespace, "name", req.Name)
 	if res, err := r.handleUpdateOrCreate(ctx, &nodeConfig); err != nil {
 		return res, err
 	}

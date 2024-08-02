@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-logr/logr"
 	iprulerv1 "github.com/plutocholia/ipruler-controller/api/v1"
@@ -42,16 +41,6 @@ type FullConfigReconciler struct {
 // +kubebuilder:rbac:groups=ipruler.pegah.tech,resources=fullconfigs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=ipruler.pegah.tech,resources=fullconfigs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=ipruler.pegah.tech,resources=fullconfigs/finalizers,verbs=update
-
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the FullConfig object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.18.2/pkg/reconcile
 func (r *FullConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
@@ -87,13 +76,12 @@ func (r *FullConfigReconciler) handleUpdateOrCreate(ctx context.Context, fullCon
 		return ctrl.Result{}, err
 	}
 	for _, pod := range podList.Items {
-		if PodIsReadyForConfigInjection(&pod) {
+		if PodIsReady(&pod) {
 			var node corev1.Node
 			if err := r.Get(ctx, client.ObjectKey{Name: pod.Spec.NodeName}, &node); err != nil {
 				r.Log.Error(err, "message", "Failed to get Node for Pod", "Pod", pod.Name)
 				return ctrl.Result{Requeue: true}, err
 			}
-
 			labelMatch := true
 			nodeLabels := node.GetLabels()
 			for key, value := range fullConfig.Spec.NodeSelector {
@@ -103,7 +91,6 @@ func (r *FullConfigReconciler) handleUpdateOrCreate(ctx context.Context, fullCon
 				}
 			}
 			if labelMatch {
-				fmt.Println(fullConfig.Spec.MergedConfig)
 				globalAgentManager.InjectConfig(&pod, &fullConfig.Spec.MergedConfig)
 			}
 		}

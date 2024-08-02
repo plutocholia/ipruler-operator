@@ -74,35 +74,9 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, nil
 	}
 
-	// The resource is not being deleted, handle update or create
-	// r.Log.Info("resource is being updated or created", "namespace", req.Namespace, "name", req.Name)
 	if res, err := r.handleUpdateOrCreate(ctx, &clusterConfig); err != nil {
 		return res, err
 	}
-
-	// podList := &corev1.PodList{}
-	// if err := r.List(ctx, podList,
-	// 	client.MatchingLabels{globalAgentManager.AppLabelKey: globalAgentManager.AppLabelValue},
-	// 	client.InNamespace(globalAgentManager.Namespace)); err != nil {
-	// 	r.Log.Error(err, "Failed to get the pods list")
-	// 	return reconcile.Result{}, err
-	// }
-	// for _, pod := range podList.Items {
-	// 	if PodIsReadyForConfigInjection(&pod) {
-	// 		var node corev1.Node
-	// 		if err := r.Get(ctx, client.ObjectKey{Name: pod.Spec.NodeName}, &node); err != nil {
-	// 			r.Log.Error(err, "message", "Failed to get Node for Pod", "Pod", pod.Name)
-	// 			return reconcile.Result{}, err
-	// 		}
-	// 		nodeLabels := node.GetLabels()
-	// 		nodeConfig := globalAgentManager.FindNodeConfigByLabelList(nodeLabels)
-	// 		if nodeConfig != nil {
-	// 			globalAgentManager.InjectConfig(&pod, nodeConfig)
-	// 		} else {
-	// 			r.Log.Info("=> No NodeConfig is returned for ", "pod", pod.Name)
-	// 		}
-	// 	}
-	// }
 
 	return ctrl.Result{}, nil
 }
