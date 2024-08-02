@@ -9,6 +9,9 @@ spec:
   nodeSelector:
     networking.type: "eth3"
   config:
+    settings:
+      table-hard-sync:
+      - 104
     rules:
     - from: 172.31.201.8/32
       table: 102

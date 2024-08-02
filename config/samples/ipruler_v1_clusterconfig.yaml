@@ -10,7 +10,7 @@ spec:
     settings:
       table-hard-sync:
       - 102
-      # - 103
+      - 103
     rules:
     - from: 172.31.201.11/32
       table: 102
