@@ -12,7 +12,7 @@ spec:
     listKind: ClusterConfigList
     plural: clusterconfigs
     singular: clusterconfig
-  scope: Namespaced
+  scope: Cluster
   versions:
   - name: v1
     schema:

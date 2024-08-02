@@ -40,7 +40,7 @@ type ClusterConfigStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-
+// +kubebuilder:resource:scope=Cluster
 // ClusterConfig is the Schema for the clusterconfigs API
 type ClusterConfig struct {
 	metav1.TypeMeta   `json:",inline"`
