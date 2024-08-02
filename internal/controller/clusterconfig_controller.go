@@ -46,6 +46,11 @@ type ClusterConfigReconciler struct {
 func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
+	// check if the request is empty due to watch over FullConfig crd in non-existence of any ClusterConfig
+	if req.NamespacedName.Name == "" && req.NamespacedName.Namespace == "" {
+		return ctrl.Result{}, nil
+	}
+
 	var clusterConfig iprulerv1.ClusterConfig
 	if err := r.Get(ctx, req.NamespacedName, &clusterConfig); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -77,7 +82,6 @@ func (r *ClusterConfigReconciler) handleUpdateOrCreate(ctx context.Context, clus
 	sharedFullConfig.ClusterConfigNamespace = clusterConfig.Namespace
 
 	fullConfigList := &iprulerv1.FullConfigList{}
-
 	if err := r.Client.List(ctx, fullConfigList); err != nil {
 		r.Log.Error(err, "Failed to List FullConfig")
 		return ctrl.Result{}, err
@@ -123,7 +127,6 @@ func (r *ClusterConfigReconciler) handleDeletion(ctx context.Context, clusterCon
 }
 
 // SetupWithManager sets up the controller with the Manager.
-
 func (r *ClusterConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&iprulerv1.ClusterConfig{}).
