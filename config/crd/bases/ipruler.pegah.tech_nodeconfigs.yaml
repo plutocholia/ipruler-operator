@@ -12,7 +12,7 @@ spec:
     listKind: NodeConfigList
     plural: nodeconfigs
     singular: nodeconfig
-  scope: Namespaced
+  scope: Cluster
   versions:
   - name: v1
     schema:

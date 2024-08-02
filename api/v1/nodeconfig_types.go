@@ -41,7 +41,7 @@ type NodeConfigStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-
+// +kubebuilder:resource:scope=Cluster
 // NodeConfig is the Schema for the nodeconfigs API
 type NodeConfig struct {
 	metav1.TypeMeta   `json:",inline"`

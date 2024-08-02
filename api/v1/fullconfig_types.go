@@ -45,7 +45,7 @@ type FullConfigStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-
+// +kubebuilder:resource:scope=Cluster
 // FullConfig is the Schema for the fullconfigs API
 type FullConfig struct {
 	metav1.TypeMeta   `json:",inline"`
