@@ -97,11 +97,16 @@ func (r *ClusterConfigReconciler) handleUpdateOrCreate(ctx context.Context, clus
 			fullConfig.Spec.ClusterConfig = clusterConfig.Spec.Config
 			fullConfig.Spec.MergedConfig = models.MergeConfigModels(&clusterConfig.Spec.Config, &fullConfig.Spec.NodeConfig)
 
-			if err := r.Client.Update(ctx, &fullConfig); err != nil {
-				r.Log.Error(err, "Failed to update FullConfig", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
+			if err := r.Client.Update(ctx, &fullConfig); err != nil && apierrors.IsConflict(err) {
+				r.Log.Info("Conflict in resource when updating spec.clusterConfig and spec.mergeConfig, The given FullConfig is changed", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
 				return ctrl.Result{}, err
+			} else if err != nil {
+				r.Log.Error(err, "Failed to update FullConfig on spec.clusterConfig and spec.mergeConfig", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
+				return ctrl.Result{}, err
+			} else {
+				r.Log.Info("Updated FullConfig on spec.clusterConfig and spec.mergeConfig", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
 			}
-			r.Log.Info("Updated FullConfig", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
+
 			return ctrl.Result{Requeue: true}, nil
 		}
 	}
@@ -110,9 +115,12 @@ func (r *ClusterConfigReconciler) handleUpdateOrCreate(ctx context.Context, clus
 	for _, fullConfig := range fullConfigList.Items {
 		fullConfig.Status.HasClusterConfig = true
 
-		if err := r.Client.Status().Update(ctx, &fullConfig); err != nil {
+		if err := r.Client.Status().Update(ctx, &fullConfig); err != nil && apierrors.IsConflict(err) {
+			r.Log.Info("Conflict in resource, the given FullConfig had been changed", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
+			return ctrl.Result{}, nil
+		} else if err != nil {
 			r.Log.Error(err, "Failed to update FullConfig status", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
-			return ctrl.Result{Requeue: true}, err
+			return ctrl.Result{}, err
 		} else {
 			r.Log.Info("Updated FullConfig status", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
 		}

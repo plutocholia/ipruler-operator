@@ -126,11 +126,16 @@ func (r *NodeConfigReconciler) handleUpdateOrCreate(ctx context.Context, nodeCon
 		fullConfig.Spec.NodeConfig = nodeConfig.Spec.Config
 		fullConfig.Spec.MergedConfig = models.MergeConfigModels(&nodeConfig.Spec.Config, &fullConfig.Spec.ClusterConfig)
 
-		if err = r.Client.Update(ctx, fullConfig); err != nil {
-			r.Log.Error(err, "Failed to update FullConfig", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
+		if err := r.Client.Update(ctx, fullConfig); err != nil && apierrors.IsConflict(err) {
+			r.Log.Info("Conflict in resource when updating spec.nodeSelector, spec.nodeConfig and spec.mergeConfig, the given FullConfig has been changed", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
 			return ctrl.Result{}, err
+		} else if err != nil {
+			r.Log.Error(err, "Failed to update FullConfig on spec.nodeSelector, spec.nodeConfig and spec.mergeConfig", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
+			return ctrl.Result{}, err
+		} else {
+			r.Log.Info("Updated FullConfig on spec.nodeSelector, spec.nodeConfig and spec.mergeConfig", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
 		}
-		r.Log.Info("Updated FullConfig", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
+
 		return ctrl.Result{Requeue: true}, nil
 	}
 
@@ -138,7 +143,7 @@ func (r *NodeConfigReconciler) handleUpdateOrCreate(ctx context.Context, nodeCon
 	if !fullConfig.Status.HasNodeConfig {
 		fullConfig.Status.HasNodeConfig = true
 		if err = r.Client.Status().Update(ctx, fullConfig); err != nil && apierrors.IsConflict(err) {
-			r.Log.Error(err, "Conflict in resource, The given FullConfig is changed", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
+			r.Log.Info("Conflict in resource, the given FullConfig had been changed", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
 			return ctrl.Result{}, nil
 		} else if err != nil {
 			r.Log.Error(err, "Failed to update FullConfig status", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
