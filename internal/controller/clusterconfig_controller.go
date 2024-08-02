@@ -43,16 +43,6 @@ type ClusterConfigReconciler struct {
 // +kubebuilder:rbac:groups=ipruler.pegah.tech,resources=clusterconfigs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=ipruler.pegah.tech,resources=clusterconfigs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=ipruler.pegah.tech,resources=clusterconfigs/finalizers,verbs=update
-
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the ClusterConfig object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.18.2/pkg/reconcile
 func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
@@ -87,8 +77,8 @@ func (r *ClusterConfigReconciler) handleUpdateOrCreate(ctx context.Context, clus
 	sharedFullConfig.ClusterConfigNamespace = clusterConfig.Namespace
 
 	fullConfigList := &iprulerv1.FullConfigList{}
-	err := r.Client.List(ctx, fullConfigList)
-	if err != nil {
+
+	if err := r.Client.List(ctx, fullConfigList); err != nil {
 		r.Log.Error(err, "Failed to List FullConfig")
 		return ctrl.Result{}, err
 	}
@@ -102,8 +92,8 @@ func (r *ClusterConfigReconciler) handleUpdateOrCreate(ctx context.Context, clus
 		if !reflect.DeepEqual(fullConfig.Spec.ClusterConfig, clusterConfig.Spec.Config) {
 			fullConfig.Spec.ClusterConfig = clusterConfig.Spec.Config
 			fullConfig.Spec.MergedConfig = models.MergeConfigModels(&clusterConfig.Spec.Config, &fullConfig.Spec.NodeConfig)
-			err = r.Client.Update(ctx, &fullConfig)
-			if err != nil {
+
+			if err := r.Client.Update(ctx, &fullConfig); err != nil {
 				r.Log.Error(err, "Failed to update FullConfig", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
 				return ctrl.Result{}, err
 			}
@@ -115,8 +105,8 @@ func (r *ClusterConfigReconciler) handleUpdateOrCreate(ctx context.Context, clus
 	// update status
 	for _, fullConfig := range fullConfigList.Items {
 		fullConfig.Status.HasClusterConfig = true
-		err = r.Client.Status().Update(ctx, &fullConfig)
-		if err != nil {
+
+		if err := r.Client.Status().Update(ctx, &fullConfig); err != nil {
 			r.Log.Error(err, "Failed to update FullConfig status", "Namespace", fullConfig.Namespace, "Name", fullConfig.Name)
 			return ctrl.Result{Requeue: true}, err
 		} else {
