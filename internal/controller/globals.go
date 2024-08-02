@@ -82,7 +82,7 @@ func init() {
 		Port:          8080,
 		UpdatePath:    "update",
 		AppLabelKey:   "app",
-		AppLabelValue: "ipruler-api",
+		AppLabelValue: "ipruler",
 		Namespace:     "kube-system",
 		Log:           ctrl.Log.WithName("AgentManager"),
 	}
