@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/plutocholia/ipruler-controller/internal/models"
-	"github.com/plutocholia/ipruler-controller/internal/utils"
+	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -38,7 +38,7 @@ func (mgr *AgentManager) InjectConfig(pod *corev1.Pod, config *models.ConfigMode
 	mgr.Log.Info("Injecting config file to", "pod", pod.Name)
 	url := fmt.Sprintf("http://%s:%d/%s", pod.Status.PodIP, mgr.Port, mgr.UpdatePath)
 
-	configYaml, _ := utils.ConvertToYAML(config)
+	configYaml, _ := ConvertToYAML(config)
 
 	// TODO: don't send any requests if the config is empty
 	// fmt.Println("the config yaml", configYaml)
@@ -75,6 +75,14 @@ func PodIsReady(pod *corev1.Pod) bool {
 		return true
 	}
 	return false
+}
+
+func ConvertToYAML(v interface{}) (string, error) {
+	data, err := yaml.Marshal(v)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
 }
 
 func init() {
