@@ -1,0 +1,11 @@
+stages:
+- publish-image
+
+include:
+  - component: git.tapsell.ir/components/autodevops/docker-build-publish@1
+    inputs:
+      job_name: docker-build-publish
+      rules:
+        - if: $CI_COMMIT_BRANCH == "master"
+          when: on_success
+        - when: never
