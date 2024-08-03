@@ -30,7 +30,7 @@ func (r *AgentPodsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	var pod corev1.Pod
 	if err := r.Get(ctx, req.NamespacedName, &pod); err != nil {
-		// check if the resource is deleded already, Ignore returning with error to prevent reconcile dead loop due to requeuing the not nil error results
+		// check if the resource has been deleded already, Ignore returning with error to prevent reconcile dead loop due to requeuing the not nil error results
 		if apierrors.IsNotFound(err) {
 			r.Log.Info("resource has been deleted", "namespace", req.NamespacedName.Namespace, "name", req.NamespacedName.Name)
 			return reconcile.Result{}, nil
@@ -51,21 +51,6 @@ func (r *AgentPodsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	if res, err := r.handleUpdateOrCreate(ctx, &pod); err != nil {
 		return res, err
 	}
-
-	// if PodIsReady(pod) {
-	// 	var node corev1.Node
-	// 	if err := r.Get(ctx, client.ObjectKey{Name: pod.Spec.NodeName}, &node); err != nil {
-	// 		r.Log.Error(err, "message", "Failed to get Node for Pod", "Pod", pod.Name)
-	// 		return reconcile.Result{}, err
-	// 	}
-	// 	nodeLabels := node.GetLabels()
-	// 	nodeConfig := globalAgentManager.FindNodeConfigByLabelList(nodeLabels)
-	// 	if nodeConfig != nil {
-	// 		globalAgentManager.InjectConfig(pod, nodeConfig)
-	// 	} else {
-	// 		r.Log.Info("No NodeConfig is available for ", "pod", pod.Name)
-	// 	}
-	// }
 
 	return ctrl.Result{}, nil
 }
