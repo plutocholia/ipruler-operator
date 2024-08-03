@@ -9,3 +9,4 @@ include:
         - if: $CI_COMMIT_BRANCH == "master"
           when: on_success
         - when: never
+      extra_args: '--build-arg="TARGETARCH=amd64"'
