@@ -23,7 +23,7 @@ type AgentPodsReconciler struct {
 	Log    logr.Logger
 }
 
-// +kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch,namespace=kube-system
+// +kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=nodes,verbs=get;list;watch
 func (r *AgentPodsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
