@@ -29,6 +29,10 @@ spec:
         env:
         - name: IPRULER_AGENT_NAMESPACE
           value: {{ .Release.Namespace }}
+        {{- with (index .Values "config" "agent-api-port") }}
+        - name: IPRULER_AGENT_API_PORT
+          value: {{ quote . }}
+        {{- end }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         livenessProbe:

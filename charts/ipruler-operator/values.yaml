@@ -3,6 +3,9 @@ image:
   tag: ~
   pullPolicy: IfNotPresent
 
+config:
+  agent-api-port: 9301
+
 resources:
   limits:
     cpu: 500m
