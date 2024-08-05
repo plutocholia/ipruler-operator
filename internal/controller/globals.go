@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/go-logr/logr"
@@ -87,8 +89,14 @@ func ConvertToYAML(v interface{}) (string, error) {
 }
 
 func init() {
+	agentPort, err := strconv.Atoi(os.Getenv("IPRULER_AGENT_API_PORT"))
+
+	if err != nil {
+		log.Fatal("Error converting string to int:", err)
+	}
+
 	globalAgentManager = &AgentManager{
-		Port:          8080,
+		Port:          agentPort,
 		UpdatePath:    "update",
 		AppLabelKey:   "app",
 		AppLabelValue: "ipruler-agent",

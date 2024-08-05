@@ -63,6 +63,11 @@ spec:
         args:
           - --leader-elect
           - --health-probe-bind-address=:8081
+        env:
+        - name: IPRULER_AGENT_NAMESPACE
+          value: ipruler-operator
+        - name: IPRULER_AGENT_API_PORT
+          value: "9301"
         image: controller:latest
         name: manager
         securityContext:
