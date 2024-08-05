@@ -26,6 +26,9 @@ spec:
         - --health-probe-bind-address=:8081
         command:
         - /manager
+        env:
+        - name: IPRULER_AGENT_NAMESPACE
+          value: {{ .Release.Namespace }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         livenessProbe:

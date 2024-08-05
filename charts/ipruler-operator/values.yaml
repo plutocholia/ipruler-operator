@@ -12,3 +12,9 @@ resources:
     memory: 64Mi
 
 replicas: 1
+
+ipruler-agent:
+  enabled: true
+
+crds:
+  enabled: true
