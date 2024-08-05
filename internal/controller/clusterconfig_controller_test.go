@@ -27,7 +27,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	iprulerv1 "github.com/plutocholia/ipruler-controller/api/v1"
+	iprulerv1 "github.com/plutocholia/ipruler-operator/api/v1"
 )
 
 var _ = Describe("ClusterConfig Controller", func() {

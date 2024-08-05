@@ -1,4 +1,4 @@
-module github.com/plutocholia/ipruler-controller
+module github.com/plutocholia/ipruler-operator
 
 go 1.22.0
 

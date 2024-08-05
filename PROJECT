@@ -5,8 +5,8 @@
 domain: pegah.tech
 layout:
 - go.kubebuilder.io/v4
-projectName: ipruler-controller
-repo: github.com/plutocholia/ipruler-controller
+projectName: ipruler-operator
+repo: github.com/plutocholia/ipruler-operator
 resources:
 - api:
     crdVersion: v1
@@ -15,7 +15,7 @@ resources:
   domain: pegah.tech
   group: ipruler
   kind: ClusterConfig
-  path: github.com/plutocholia/ipruler-controller/api/v1
+  path: github.com/plutocholia/ipruler-operator/api/v1
   version: v1
 - api:
     crdVersion: v1
@@ -24,7 +24,7 @@ resources:
   domain: pegah.tech
   group: ipruler
   kind: NodeConfig
-  path: github.com/plutocholia/ipruler-controller/api/v1
+  path: github.com/plutocholia/ipruler-operator/api/v1
   version: v1
 - api:
     crdVersion: v1
@@ -33,6 +33,6 @@ resources:
   domain: pegah.tech
   group: ipruler
   kind: FullConfig
-  path: github.com/plutocholia/ipruler-controller/api/v1
+  path: github.com/plutocholia/ipruler-operator/api/v1
   version: v1
 version: "3"

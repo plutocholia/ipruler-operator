@@ -34,8 +34,8 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	iprulerv1 "github.com/plutocholia/ipruler-controller/api/v1"
-	"github.com/plutocholia/ipruler-controller/internal/controller"
+	iprulerv1 "github.com/plutocholia/ipruler-operator/api/v1"
+	"github.com/plutocholia/ipruler-operator/internal/controller"
 	// +kubebuilder:scaffold:imports
 )
 

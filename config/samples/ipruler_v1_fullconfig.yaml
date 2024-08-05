@@ -2,7 +2,7 @@ apiVersion: ipruler.pegah.tech/v1
 kind: FullConfig
 metadata:
   labels:
-    app.kubernetes.io/name: ipruler-controller
+    app.kubernetes.io/name: ipruler-operator
     app.kubernetes.io/managed-by: kustomize
   name: fullconfig-sample
 spec:

@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/go-logr/logr"
-	"github.com/plutocholia/ipruler-controller/internal/models"
+	"github.com/plutocholia/ipruler-operator/internal/models"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"

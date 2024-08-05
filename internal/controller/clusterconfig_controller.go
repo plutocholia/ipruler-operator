@@ -29,8 +29,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/go-logr/logr"
-	iprulerv1 "github.com/plutocholia/ipruler-controller/api/v1"
-	"github.com/plutocholia/ipruler-controller/internal/models"
+	iprulerv1 "github.com/plutocholia/ipruler-operator/api/v1"
+	"github.com/plutocholia/ipruler-operator/internal/models"
 )
 
 // ClusterConfigReconciler reconciles a ClusterConfig object

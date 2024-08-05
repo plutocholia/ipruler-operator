@@ -17,7 +17,7 @@ limitations under the License.
 package v1
 
 import (
-	"github.com/plutocholia/ipruler-controller/internal/models"
+	"github.com/plutocholia/ipruler-operator/internal/models"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

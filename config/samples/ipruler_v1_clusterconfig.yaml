@@ -2,7 +2,7 @@ apiVersion: ipruler.pegah.tech/v1
 kind: ClusterConfig
 metadata:
   labels:
-    app.kubernetes.io/name: ipruler-controller
+    app.kubernetes.io/name: ipruler-operator
     app.kubernetes.io/managed-by: kustomize
   name: clusterconfig-sample
 spec:
