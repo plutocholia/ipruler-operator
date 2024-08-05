@@ -32,7 +32,7 @@ jobs:
         with:
           context: .
           build-args: |
-            TARGETARCH=arm64
+            TARGETARCH=amd64
           tags: |
             ${{ secrets.DOCKER_REPO }}:${{ github.ref_name }}
             ${{ secrets.DOCKER_REPO }}:latest
