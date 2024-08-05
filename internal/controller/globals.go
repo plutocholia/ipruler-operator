@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/go-logr/logr"
@@ -91,7 +92,7 @@ func init() {
 		UpdatePath:    "update",
 		AppLabelKey:   "app",
 		AppLabelValue: "ipruler-agent",
-		Namespace:     "kube-system",
+		Namespace:     os.Getenv("IPRULER_AGENT_NAMESPACE"),
 		Log:           ctrl.Log.WithName("AgentManager"),
 	}
 	sharedFullConfig = &SharedFullConfig{}
