@@ -1,0 +1,60 @@
+apiVersion: ipruler.pegah.tech/v1
+kind: ClusterConfig
+metadata:
+  name: nodes-routing
+spec:
+  config:
+    settings:
+      table-hard-sync:
+      - 102
+    rules:
+    - from: 172.31.201.11/32
+      table: 102
+    - from: 172.31.201.12/32
+      table: 102
+---
+apiVersion: ipruler.pegah.tech/v1
+kind: NodeConfig
+metadata:
+  name: eth2-vlan-104
+spec:
+  nodeSelector:
+    networking.type: eth2-vlan-104
+  config:
+    vlans:
+      - name: eth2.104
+        link: eth2
+        id: 104
+    routes:
+      - to: 172.31.201.0/24
+        dev: eth2.104
+        scope: link
+        protocol: static
+      - to: default
+        via: 172.31.201.1
+        table: 102
+        protocol: static
+        on-link: true
+---
+apiVersion: ipruler.pegah.tech/v1
+kind: NodeConfig
+metadata:
+  name: eth2-vlan-105
+spec:
+  nodeSelector:
+    networking.type: eth2-vlan-105
+  config:
+    vlans:
+      - name: eth2.105
+        link: eth2
+        id: 105
+    routes:
+      - to: 172.31.201.0/25
+        dev: eth2.105
+        scope: link
+        protocol: static
+      - to: default
+        via: 172.31.201.1
+        table: 102
+        protocol: static
+        on-link: true
