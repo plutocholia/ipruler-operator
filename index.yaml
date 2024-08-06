@@ -2,6 +2,25 @@ apiVersion: v1
 entries:
   ipruler-operator:
   - apiVersion: v2
+    appVersion: v0.0.4
+    created: "2024-08-06T05:07:03.588056041Z"
+    dependencies:
+    - condition: crds.enabled
+      name: crds
+      repository: ""
+      version: 0.0.0
+    - condition: ipruler-agent.enabled
+      name: ipruler-agent
+      repository: https://plutocholia.github.io/ipruler-agent
+      version: 0.1.1
+    description: A Helm chart for ipruler-operator
+    digest: 376ae73d45272f9ad15c7231e59da6beaa571c32da00b9dcdc1c7d17abf7267d
+    name: ipruler-operator
+    type: application
+    urls:
+    - https://github.com/plutocholia/ipruler-operator/releases/download/ipruler-operator-0.0.4/ipruler-operator-0.0.4.tgz
+    version: 0.0.4
+  - apiVersion: v2
     appVersion: v0.0.3
     created: "2024-08-05T19:43:13.87725762Z"
     dependencies:
@@ -58,4 +77,4 @@ entries:
     urls:
     - https://github.com/plutocholia/ipruler-operator/releases/download/ipruler-operator-0.0.1/ipruler-operator-0.0.1.tgz
     version: 0.0.1
-generated: "2024-08-05T19:43:13.877274091Z"
+generated: "2024-08-06T05:07:03.588085446Z"
