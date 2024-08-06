@@ -48,13 +48,13 @@ func (mgr *AgentManager) InjectConfig(pod *corev1.Pod, config *models.ConfigMode
 
 	resp, err := http.Post(url, "text/plain", bytes.NewReader([]byte(configYaml)))
 	if err != nil {
-		mgr.Log.Error(err, "msg", "Failed to send request", "pod", pod.Name)
+		mgr.Log.Error(err, "Failed to send request", "pod", pod.Name)
 		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		mgr.Log.Error(err, "msg", "Failed to read response", "pod", pod.Name)
+		mgr.Log.Error(err, "Failed to read response", "pod", pod.Name)
 		resp.Body.Close()
 		return
 	}
