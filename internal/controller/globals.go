@@ -6,16 +6,34 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 	"sync"
 
+	env "github.com/Netflix/go-env"
 	"github.com/go-logr/logr"
 	"github.com/plutocholia/ipruler-operator/internal/models"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
+
+type Environment struct {
+	IPRulerAgentPort       int    `env:"IPRULER_AGENT_API_PORT,default=9301"`
+	IPRulerAgentNamespace  string `env:"IPRULER_AGENT_NAMESPACE,default=kube-system"`
+	IPRulerAgentLabelKey   string `env:"IPRULER_AGENT_LABEL_KEY,default=app"`
+	IPRulerAgentLabelValue string `env:"IPRULER_AGENT_LABEL_VALUE,default=ipruler-agent"`
+	IPRulerAgentUpdatePath string `env:"IPRULER_AGENT_UPDATE_PATH,default=update"`
+}
+
+func (e *Environment) String() string {
+	return fmt.Sprintf(`
+Environments:
+	IPRulerAgentPort: %d
+	IPRulerAgentNamespace: %s
+	IPRulerAgentLabelKey: %s
+	IPRulerAgentLabelValue: %s
+	IPRulerAgentUpdatePath: %s
+`, e.IPRulerAgentPort, e.IPRulerAgentNamespace, e.IPRulerAgentLabelKey, e.IPRulerAgentLabelValue, e.IPRulerAgentUpdatePath)
+}
 
 type SharedFullConfig struct {
 	Mutex                  sync.Mutex
@@ -33,6 +51,7 @@ type AgentManager struct {
 }
 
 var (
+	envirnment         Environment
 	globalAgentManager *AgentManager
 	sharedFullConfig   *SharedFullConfig
 )
@@ -42,9 +61,6 @@ func (mgr *AgentManager) InjectConfig(pod *corev1.Pod, config *models.ConfigMode
 	url := fmt.Sprintf("http://%s:%d/%s", pod.Status.PodIP, mgr.Port, mgr.UpdatePath)
 
 	configYaml, _ := ConvertToYAML(config)
-
-	// TODO: don't send any requests if the config is empty
-	// fmt.Println("the config yaml", configYaml)
 
 	resp, err := http.Post(url, "text/plain", bytes.NewReader([]byte(configYaml)))
 	if err != nil {
@@ -89,18 +105,18 @@ func ConvertToYAML(v interface{}) (string, error) {
 }
 
 func init() {
-	agentPort, err := strconv.Atoi(os.Getenv("IPRULER_AGENT_API_PORT"))
-
-	if err != nil {
-		log.Fatal("Error converting string to int:", err)
+	if _, err := env.UnmarshalFromEnviron(&envirnment); err != nil {
+		log.Fatal(err)
 	}
 
+	fmt.Println(envirnment.String())
+
 	globalAgentManager = &AgentManager{
-		Port:          agentPort,
-		UpdatePath:    "update",
-		AppLabelKey:   "app",
-		AppLabelValue: "ipruler-agent",
-		Namespace:     os.Getenv("IPRULER_AGENT_NAMESPACE"),
+		Port:          envirnment.IPRulerAgentPort,
+		UpdatePath:    envirnment.IPRulerAgentUpdatePath,
+		AppLabelKey:   envirnment.IPRulerAgentLabelKey,
+		AppLabelValue: envirnment.IPRulerAgentLabelValue,
+		Namespace:     envirnment.IPRulerAgentNamespace,
 		Log:           ctrl.Log.WithName("AgentManager"),
 	}
 	sharedFullConfig = &SharedFullConfig{}
