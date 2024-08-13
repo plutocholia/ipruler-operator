@@ -25,6 +25,6 @@ dependencies:
     version: "0.0.0"
     condition: crds.enabled
   - name: ipruler-agent
-    version: 0.1.1
+    version: 0.1.2
     repository: https://plutocholia.github.io/ipruler-agent
     condition: ipruler-agent.enabled
