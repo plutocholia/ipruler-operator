@@ -17,11 +17,12 @@ import (
 )
 
 type Environment struct {
-	IPRulerAgentPort       int    `env:"IPRULER_AGENT_API_PORT,default=9301"`
-	IPRulerAgentNamespace  string `env:"IPRULER_AGENT_NAMESPACE,default=kube-system"`
-	IPRulerAgentLabelKey   string `env:"IPRULER_AGENT_LABEL_KEY,default=app"`
-	IPRulerAgentLabelValue string `env:"IPRULER_AGENT_LABEL_VALUE,default=ipruler-agent"`
-	IPRulerAgentUpdatePath string `env:"IPRULER_AGENT_UPDATE_PATH,default=update"`
+	IPRulerAgentPort        int    `env:"IPRULER_AGENT_API_PORT,default=9301"`
+	IPRulerAgentNamespace   string `env:"IPRULER_AGENT_NAMESPACE,default=kube-system"`
+	IPRulerAgentLabelKey    string `env:"IPRULER_AGENT_LABEL_KEY,default=app"`
+	IPRulerAgentLabelValue  string `env:"IPRULER_AGENT_LABEL_VALUE,default=ipruler-agent"`
+	IPRulerAgentUpdatePath  string `env:"IPRULER_AGENT_UPDATE_PATH,default=update"`
+	IPRulerAgentCleanupPath string `env:"IPRULER_AGENT_CLEANUP_PATH,default=cleanup"`
 }
 
 func (e *Environment) String() string {
@@ -32,7 +33,8 @@ Environments:
 	IPRulerAgentLabelKey: %s
 	IPRulerAgentLabelValue: %s
 	IPRulerAgentUpdatePath: %s
-`, e.IPRulerAgentPort, e.IPRulerAgentNamespace, e.IPRulerAgentLabelKey, e.IPRulerAgentLabelValue, e.IPRulerAgentUpdatePath)
+	IPRulerAgentCleanupPath: %s
+`, e.IPRulerAgentPort, e.IPRulerAgentNamespace, e.IPRulerAgentLabelKey, e.IPRulerAgentLabelValue, e.IPRulerAgentUpdatePath, e.IPRulerAgentCleanupPath)
 }
 
 type SharedFullConfig struct {
@@ -44,6 +46,7 @@ type SharedFullConfig struct {
 type AgentManager struct {
 	Port          int
 	UpdatePath    string
+	CleanupPath   string
 	Namespace     string
 	AppLabelKey   string
 	AppLabelValue string
@@ -76,6 +79,27 @@ func (mgr *AgentManager) InjectConfig(pod *corev1.Pod, config *models.ConfigMode
 	}
 
 	mgr.Log.Info("Injecting response from pod", "pod", pod.Name, "response", string(body))
+	resp.Body.Close()
+}
+
+func (mgr *AgentManager) Cleanup(pod *corev1.Pod) {
+	mgr.Log.Info("Cleaup", "pod", pod.Name)
+	url := fmt.Sprintf("http://%s:%d/%s", pod.Status.PodIP, mgr.Port, mgr.CleanupPath)
+
+	resp, err := http.Post(url, "text/plain", nil)
+	if err != nil {
+		mgr.Log.Error(err, "Failed to send cleanup request", "pod", pod.Name)
+		return
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		mgr.Log.Error(err, "Failed to read cleanup response", "pod", pod.Name)
+		resp.Body.Close()
+		return
+	}
+
+	mgr.Log.Info("Cleanup response from pod", "pod", pod.Name, "response", string(body))
 	resp.Body.Close()
 }
 
@@ -114,6 +138,7 @@ func init() {
 	globalAgentManager = &AgentManager{
 		Port:          envirnment.IPRulerAgentPort,
 		UpdatePath:    envirnment.IPRulerAgentUpdatePath,
+		CleanupPath:   envirnment.IPRulerAgentCleanupPath,
 		AppLabelKey:   envirnment.IPRulerAgentLabelKey,
 		AppLabelValue: envirnment.IPRulerAgentLabelValue,
 		Namespace:     envirnment.IPRulerAgentNamespace,

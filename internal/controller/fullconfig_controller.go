@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -51,6 +52,10 @@ func (r *FullConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	if err := r.handleFinalizer(ctx, &fullConfig); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	// Check if the resource is being deleted
@@ -98,7 +103,55 @@ func (r *FullConfigReconciler) handleUpdateOrCreate(ctx context.Context, fullCon
 	return ctrl.Result{}, nil
 }
 
+func (r *FullConfigReconciler) handleFinalizer(ctx context.Context, fullConfig *iprulerv1.FullConfig) error {
+	finalizerName := "ipruler.pegah.tech/finalizer"
+	if fullConfig.ObjectMeta.DeletionTimestamp.IsZero() {
+		// in case of update or creation of the nodeConfig
+		if !controllerutil.ContainsFinalizer(fullConfig, finalizerName) {
+			if ok := controllerutil.AddFinalizer(fullConfig, finalizerName); !ok {
+				r.Log.Info("unable to update the finilazer", "namespace", fullConfig.Namespace, "name", fullConfig.Name)
+			}
+			return r.Update(ctx, fullConfig)
+		}
+	} else {
+		// in case of deletion of the nodeConfig
+		if controllerutil.ContainsFinalizer(fullConfig, finalizerName) {
+			if ok := controllerutil.RemoveFinalizer(fullConfig, finalizerName); !ok {
+				r.Log.Info("unable to remove the finilazer", "namespace", fullConfig.Namespace, "name", fullConfig.Name)
+			}
+			return r.Update(ctx, fullConfig)
+		}
+	}
+	return nil
+}
+
 func (r *FullConfigReconciler) handleDeletion(ctx context.Context, fullConfig *iprulerv1.FullConfig) (ctrl.Result, error) {
+	podList := &corev1.PodList{}
+	if err := r.List(ctx, podList, client.MatchingLabels{globalAgentManager.AppLabelKey: globalAgentManager.AppLabelValue}, client.InNamespace(globalAgentManager.Namespace)); err != nil {
+		r.Log.Error(err, "Failed to get pods list")
+		return ctrl.Result{}, err
+	}
+	for _, pod := range podList.Items {
+		if PodIsReady(&pod) {
+			var node corev1.Node
+			if err := r.Get(ctx, client.ObjectKey{Name: pod.Spec.NodeName}, &node); err != nil {
+				r.Log.Error(err, "message", "Failed to get pods's node", "Pod", pod.Name)
+				return ctrl.Result{Requeue: true}, err
+			}
+			labelMatch := true
+			nodeLabels := node.GetLabels()
+			for key, value := range fullConfig.Spec.NodeSelector {
+				r.Log.Info("deleted full config node selector", "key", key, "value", value)
+				if nodeLabels[key] != value {
+					labelMatch = false
+					break
+				}
+			}
+			if labelMatch {
+				globalAgentManager.Cleanup(&pod)
+			}
+		}
+	}
 	return ctrl.Result{}, nil
 }
 
@@ -114,10 +167,10 @@ func (r *FullConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				return true
 			},
 			DeleteFunc: func(e event.DeleteEvent) bool {
-				return false
+				return true
 			},
 			GenericFunc: func(e event.GenericEvent) bool {
-				return false
+				return true
 			},
 		}).
 		Complete(r)
