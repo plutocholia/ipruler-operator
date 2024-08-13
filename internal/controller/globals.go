@@ -23,6 +23,7 @@ type Environment struct {
 	IPRulerAgentLabelValue  string `env:"IPRULER_AGENT_LABEL_VALUE,default=ipruler-agent"`
 	IPRulerAgentUpdatePath  string `env:"IPRULER_AGENT_UPDATE_PATH,default=update"`
 	IPRulerAgentCleanupPath string `env:"IPRULER_AGENT_CLEANUP_PATH,default=cleanup"`
+	NodeCleanUpOnDeletion   bool   `env:"NODE_CLEANUP_ON_DELETION,default=true"`
 }
 
 func (e *Environment) String() string {
@@ -34,7 +35,8 @@ Environments:
 	IPRulerAgentLabelValue: %s
 	IPRulerAgentUpdatePath: %s
 	IPRulerAgentCleanupPath: %s
-`, e.IPRulerAgentPort, e.IPRulerAgentNamespace, e.IPRulerAgentLabelKey, e.IPRulerAgentLabelValue, e.IPRulerAgentUpdatePath, e.IPRulerAgentCleanupPath)
+	NodeCleanUpOnDeletion %t
+`, e.IPRulerAgentPort, e.IPRulerAgentNamespace, e.IPRulerAgentLabelKey, e.IPRulerAgentLabelValue, e.IPRulerAgentUpdatePath, e.IPRulerAgentCleanupPath, e.NodeCleanUpOnDeletion)
 }
 
 type SharedFullConfig struct {

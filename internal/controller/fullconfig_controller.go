@@ -126,29 +126,31 @@ func (r *FullConfigReconciler) handleFinalizer(ctx context.Context, fullConfig *
 }
 
 func (r *FullConfigReconciler) handleDeletion(ctx context.Context, fullConfig *iprulerv1.FullConfig) (ctrl.Result, error) {
-	podList := &corev1.PodList{}
-	if err := r.List(ctx, podList, client.MatchingLabels{globalAgentManager.AppLabelKey: globalAgentManager.AppLabelValue}, client.InNamespace(globalAgentManager.Namespace)); err != nil {
-		r.Log.Error(err, "Failed to get pods list")
-		return ctrl.Result{}, err
-	}
-	for _, pod := range podList.Items {
-		if PodIsReady(&pod) {
-			var node corev1.Node
-			if err := r.Get(ctx, client.ObjectKey{Name: pod.Spec.NodeName}, &node); err != nil {
-				r.Log.Error(err, "message", "Failed to get pods's node", "Pod", pod.Name)
-				return ctrl.Result{Requeue: true}, err
-			}
-			labelMatch := true
-			nodeLabels := node.GetLabels()
-			for key, value := range fullConfig.Spec.NodeSelector {
-				r.Log.Info("deleted full config node selector", "key", key, "value", value)
-				if nodeLabels[key] != value {
-					labelMatch = false
-					break
+	if envirnment.NodeCleanUpOnDeletion {
+		podList := &corev1.PodList{}
+		if err := r.List(ctx, podList, client.MatchingLabels{globalAgentManager.AppLabelKey: globalAgentManager.AppLabelValue}, client.InNamespace(globalAgentManager.Namespace)); err != nil {
+			r.Log.Error(err, "Failed to get pods list")
+			return ctrl.Result{}, err
+		}
+		for _, pod := range podList.Items {
+			if PodIsReady(&pod) {
+				var node corev1.Node
+				if err := r.Get(ctx, client.ObjectKey{Name: pod.Spec.NodeName}, &node); err != nil {
+					r.Log.Error(err, "message", "Failed to get pods's node", "Pod", pod.Name)
+					return ctrl.Result{Requeue: true}, err
 				}
-			}
-			if labelMatch {
-				globalAgentManager.Cleanup(&pod)
+				labelMatch := true
+				nodeLabels := node.GetLabels()
+				for key, value := range fullConfig.Spec.NodeSelector {
+					r.Log.Info("deleted full config node selector", "key", key, "value", value)
+					if nodeLabels[key] != value {
+						labelMatch = false
+						break
+					}
+				}
+				if labelMatch {
+					globalAgentManager.Cleanup(&pod)
+				}
 			}
 		}
 	}
