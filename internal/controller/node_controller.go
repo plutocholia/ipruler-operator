@@ -90,10 +90,16 @@ func (r *NodeReconciler) handleUpdateOrCreate(ctx context.Context, node *corev1.
 			matchedFullConfig.Annotations = map[string]string{}
 		}
 		matchedFullConfig.Annotations["lastUpdateTrigger"] = time.Now().Format(time.RFC3339)
-		if err := r.Client.Update(ctx, matchedFullConfig); err != nil {
-			r.Log.Error(err, "Failed to update FullConfig to trigger reconciliation")
+		if err := r.Client.Update(ctx, matchedFullConfig); err != nil && apierrors.IsConflict(err) {
+			r.Log.Info("Conflict in resource when updating lastUpdateTrigger annotation. The given FullConfig has been changed", "Namespace", matchedFullConfig.Namespace, "Name", matchedFullConfig.Name)
 			return ctrl.Result{}, err
+		} else if err != nil {
+			r.Log.Error(err, "Failed to update FullConfig on lastUpdateTrigger annotation", "Namespace", matchedFullConfig.Namespace, "Name", matchedFullConfig.Name)
+			return ctrl.Result{}, err
+		} else {
+			r.Log.Info("Updated FullConfig on lastUpdateTrigger", "Namespace", matchedFullConfig.Namespace, "Name", matchedFullConfig.Name)
 		}
+
 		return ctrl.Result{}, nil
 	}
 
