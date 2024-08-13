@@ -5,6 +5,7 @@ image:
 
 config:
   agent-api-port: 9301
+  node-cleanup-on-deletion: true
 
 resources:
   limits:
