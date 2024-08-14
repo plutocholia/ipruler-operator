@@ -94,6 +94,9 @@ spec:
                 additionalProperties:
                   type: string
                 type: object
+                x-kubernetes-validations:
+                - message: spec.nodeSelector is immutable and cannot be changed
+                  rule: self == oldSelf
             type: object
           status:
             description: NodeConfigStatus defines the observed state of NodeConfig

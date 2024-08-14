@@ -26,9 +26,7 @@ import (
 
 // NodeConfigSpec defines the desired state of NodeConfig
 type NodeConfigSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="spec.nodeSelector is immutable and cannot be changed"
 	NodeSelector map[string]string  `json:"nodeSelector,omitempty"`
 	Config       models.ConfigModel `json:"config,omitempty"`
 }
