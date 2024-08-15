@@ -42,15 +42,15 @@ helm --namespace ipruler-operator upgrade --install \\
 
 | Key                               | Description                      | Default                          |
 |--------------------------------   |----------------------------------|----------------------------------|
-| `image.repository`                | Docker image repository          | `plutocholia/ipruler-operator`   |
-| `image.tag`                       | Tag for the image                | `~`                              |
-| `image.pullPolicy`                | Image pull policy                | `IfNotPresent`                   |
-| `config.agent-api-port`           | Communication port to the ipruler-agent API   | `9301`                           |
-| `config.node-cleanup-on-deletion` | Whether to cleanup routing configurations on worker nodes on deletion of NodeConfigs | `true`                           |
-| `resources.limits.cpu`            | CPU limits for the container     | `500m`                           |
-| `resources.limits.memory`         | Memory limits for the container  | `128Mi`                          |
-| `resources.requests.cpu`          | CPU requests for the container   | `10m`                            |
-| `resources.requests.memory`       | Memory requests for the container| `64Mi`                           |
-| `replicas`                        | Number of operator replicas | `1`                              |
-| `ipruler-agent.enabled`           | Enable installation of ipruler agent | `true`                           |
-| `crds.enabled`                    | Enable installation of Custom Resource Definitions (CRDs) | `true`                   |
+| `image.repository`                | Docker image repository          | `plutocholia/ipruler-operator` |
+| `image.tag`                       | Tag for the image                | `~` |
+| `image.pullPolicy`                | Image pull policy                | `IfNotPresent` |
+| `config.agent-api-port`           | Communication port to the ipruler-agent API | `9301` |
+| `config.node-cleanup-on-deletion` | Whether to cleanup routing configurations on worker nodes on deletion of NodeConfigs | `true`|
+| `resources.limits.cpu`            | CPU limits for the container | `500m` |
+| `resources.limits.memory`         | Memory limits for the container | `128Mi` |
+| `resources.requests.cpu`          | CPU requests for the container | `10m` |
+| `resources.requests.memory`       | Memory requests for the container | `64Mi` |
+| `replicas`                        | Number of operator replicas | `1` |
+| `ipruler-agent.enabled`           | Enable installation of ipruler agent | `true` |
+| `crds.enabled`                    | Enable installation of Custom Resource Definitions (CRDs) | `true` |
