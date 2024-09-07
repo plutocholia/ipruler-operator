@@ -33,10 +33,8 @@ spec:
         - name: IPRULER_AGENT_API_PORT
           value: {{ quote . }}
         {{- end }}
-        {{- with (index .Values "config" "node-cleanup-on-deletion") }}
         - name: NODE_CLEANUP_ON_DELETION
-          value: {{ quote . }}
-        {{- end }}
+          value: {{ quote (default "false" (index .Values "config" "node-cleanup-on-deletion")) }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         livenessProbe:
